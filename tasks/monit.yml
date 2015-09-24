@@ -1,7 +1,11 @@
 ---
 - name: install monit
   apt: name=monit update_cache=yes
+  when: ansible_os_family == 'Debian'
 
+- name: install monit
+  yum: name=monit update_cache=yes
+  when: ansible_os_family == 'RedHat'
 
 - name: allow localhost access in monit config
   lineinfile: dest=/etc/monit/monitrc line="{{ item }}"
