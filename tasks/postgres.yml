@@ -1,10 +1,12 @@
 ---
 - name: "add postgres repository"
   apt_repository: repo="deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
+  when: ansible_os_family == 'Debian'
 
 
 - name: "add postgres repository key"
   apt_key: url="https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+  when: ansible_os_family == 'Debian'
 
 
 - name: "install postgres & libpq-dev"
@@ -12,7 +14,23 @@
   with_items:
     - postgresql-9.4
     - libpq-dev
+  when: ansible_os_family == 'Debian'
 
+- name: "install postgres & libpq-dev"
+  yum: name="{{ item }}" update_cache=yes state=present
+  with_items:
+    - postgresql
+    - postgresql-server
+    - libpqxx-devel
+  when: ansible_os_family == 'RedHat'
+
+- name: Initiate database
+  command: service postgresql initdb
+          creates=/var/lib/pgsql/data/postgresql.conf
+  when: ansible_os_family == 'RedHat'
+
+- service: name=postgresql state=started enabled=yes
+  when: ansible_os_family == 'RedHat'
 
 - name: install psycopg2 python module
   pip: name=psycopg2
